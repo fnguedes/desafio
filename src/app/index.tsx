@@ -91,6 +91,10 @@ export default function Login() {
 
                if (response.ok && data.accessToken) {
                   await storeTokens(data.accessToken, data.refreshToken);
+                  router.push({
+                     pathname: "/home",
+                     params: { token: data.accessToken },
+                  });
                } else {
                   console.log("Erro no refresh:", data);
                }
