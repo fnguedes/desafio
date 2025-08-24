@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import FieldButton from "../components/FieldButton";
 
 export default function Home() {
@@ -8,17 +8,18 @@ export default function Home() {
 	const [user, setUser] = useState<any>(null);
 
 	useEffect(() => {
+		let intervalId: NodeJS.Timeout;
+
 		const fetchUser = async () => {
 			try {
 				console.log("TELA HOME", token);
 				const response = await fetch("https://api-dev.boraup.com.br/users/me", {
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`, // 🔑 manda o token no header
+						Authorization: `Bearer ${token}`,
 					},
 					method: "GET",
 				});
-				console.log("RESPONSE", response);
 
 				const userData = await response.json();
 				console.log("USER DATA", userData);
@@ -29,11 +30,21 @@ export default function Home() {
 		};
 
 		if (token) {
+			// chama imediatamente ao montar
 			fetchUser();
+
+			// e agenda atualização a cada 5s
+			intervalId = setInterval(fetchUser, 5000);
 		}
-		console.log("ENTROU NESSA BOSTA AQUI");
+
+		// cleanup pra não ficar com interval rodando quando desmontar
+		return () => {
+			if (intervalId) clearInterval(intervalId);
+		};
 	}, [token]);
+
 	if (!user) return <Text>Carregando dados do usuário...</Text>;
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.containerTitle}>
